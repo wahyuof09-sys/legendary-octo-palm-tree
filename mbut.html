@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src https://fonts.gstatic.com; img-src https:; media-src https:; connect-src 'self'">
+  <title>Dark Engine - Access</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <style>
+    /* ================= RESET & BASE ================= */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background: #000000;
+      color: #E0E0E0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ================= BACKGROUND: FALLING STARS ================= */
+    .star-container {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      transform: rotate(45deg);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .star {
+      position: absolute;
+      top: -10%;
+      left: 50%;
+      width: 100px;
+      height: 2px;
+      background: linear-gradient(90deg, #fff, transparent);
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+      animation: meteor 3s linear infinite;
+      opacity: 0;
+    }
+
+    .star::before {
+      content: '';
+      position: absolute;
+      transform: translateY(-50%);
+      top: 50%;
+      width: 300px;
+      height: 1px;
+      background: linear-gradient(90deg, #fff, transparent);
+    }
+
+    @keyframes meteor {
+      0% { transform: rotate(180deg) translateX(0); opacity: 1; }
+      70% { opacity: 1; }
+      100% { transform: rotate(180deg) translateX(-1000px); opacity: 0; }
+    }
+
+    .star:nth-child(1) { top: 0; right: 0; left: auto; animation-delay: 0s; animation-duration: 2.5s; }
+    .star:nth-child(2) { top: 20%; right: 20%; left: auto; animation-delay: 0.5s; animation-duration: 3s; }
+    .star:nth-child(3) { top: 10%; right: 50%; left: auto; animation-delay: 1.2s; animation-duration: 2s; }
+    .star:nth-child(4) { top: 50%; right: 10%; left: auto; animation-delay: 1.8s; animation-duration: 2.2s; }
+    .star:nth-child(5) { top: 30%; right: 80%; left: auto; animation-delay: 2.5s; animation-duration: 3.5s; }
+
+    /* ================= WRAPPERS (Views) ================= */
+    .view-container {
+        width: 100%;
+        max-width: 380px;
+        padding: 20px;
+        position: relative;
+        z-index: 10;
+        display: none;
+        animation: fadeIn 0.5s ease;
+    }
+    
+    .view-container.active {
+        display: block;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ================= VIEW 1: HOME MENU ================= */
+    .top-bar {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+        padding: 0 10px;
+    }
+
+    .welcome-badge {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-family: 'Orbitron';
+        color: #ddd;
+    }
+
+    .banner-card {
+        position: relative;
+        width: 100%;
+        height: 200px;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        margin-bottom: 30px;
+    }
+
+    .banner-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: brightness(0.5);
+    }
+
+    .banner-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: 'Orbitron', sans-serif;
+        font-size: 28px;
+        font-weight: 900;
+        color: #fff;
+        letter-spacing: 2px;
+        text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        text-transform: uppercase;
+        width: 100%;
+        text-align: center;
+    }
+
+    .menu-btn {
+        width: 100%;
+        padding: 16px;
+        margin-bottom: 15px;
+        background: rgba(30, 30, 40, 0.8);
+        border: 1px solid rgba(60, 60, 100, 0.5);
+        border-radius: 12px;
+        color: #e0e0e0;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: 0.3s;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .menu-btn:hover {
+        background: rgba(50, 50, 80, 0.9);
+        border-color: #00e5ff;
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+    .contact-section {
+        margin-top: 40px;
+        text-align: center;
+    }
+
+    .contact-label {
+        font-size: 12px;
+        color: #888;
+        letter-spacing: 2px;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+    }
+
+    .social-row {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .social-btn {
+        width: 50px;
+        height: 50px;
+        background: rgba(20,20,20,0.8);
+        border: 1px solid #333;
+        border-radius: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 20px;
+        color: #fff;
+        cursor: pointer;
+        transition: 0.3s;
+        text-decoration: none;
+    }
+
+    .social-btn:hover {
+        background: #fff;
+        color: #000;
+        box-shadow: 0 0 15px rgba(255,255,255,0.5);
+    }
+
+    /* ================= VIEW 2: LOGIN FORM ================= */
+    .login-container {
+        background: rgba(10, 15, 20, 0.85);
+        border: 1px solid rgba(0, 229, 255, 0.1);
+        border-radius: 25px;
+        padding: 40px 25px;
+        text-align: center;
+        box-shadow: 0 0 40px rgba(0,0,0,0.8);
+        position: relative;
+    }
+
+    .profile-img {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #00e5ff;
+        box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+        margin-bottom: 15px;
+    }
+
+    .login-title {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 22px;
+        color: #fff;
+        margin-bottom: 5px;
+        letter-spacing: 1px;
+    }
+
+    .login-subtitle {
+        font-size: 12px;
+        color: #777;
+        margin-bottom: 30px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .input-field-group {
+        position: relative;
+        margin-bottom: 20px;
+        text-align: left;
+    }
+
+    .input-style {
+        width: 100%;
+        padding: 15px 45px;
+        background: #050a10;
+        border: 1px solid #1f2a36;
+        border-radius: 12px;
+        color: #fff;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 16px;
+        outline: none;
+        transition: 0.3s;
+    }
+
+    .input-style:focus {
+        border-color: #00e5ff;
+        box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #00e5ff;
+        font-size: 16px;
+    }
+
+    .toggle-pass {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #555;
+        cursor: pointer;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 15px;
+        margin-top: 10px;
+        background: linear-gradient(90deg, #0093E9, #00e5ff);
+        border: none;
+        border-radius: 12px;
+        color: #fff;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 16px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        cursor: pointer;
+        box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+        transition: 0.3s;
+    }
+
+    .submit-btn:hover {
+        transform: scale(1.02);
+        box-shadow: 0 0 25px rgba(0, 229, 255, 0.5);
+    }
+
+    /* ================= VIEW 3: LOADING SCREEN ================= */
+    .loading-screen {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: #000;
+        z-index: 3000;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .video-wrapper {
+        width: 90%;
+        max-width: 500px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+        margin-bottom: 30px; 
+    }
+
+    .loading-video {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    .loading-text {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 20px;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        animation: pulse 1.5s infinite;
+        margin-top: 20px;
+    }
+
+    @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+    /* ================= POPUP & LOADER BAR ================= */
+    #customPopup {
+        position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+        background: rgba(255,0,0,0.8); color: white; padding: 10px 20px;
+        border-radius: 8px; z-index: 9999; display: none;
+        font-family: 'Rajdhani'; font-weight: bold; border: 1px solid red;
+    }
+
+    .loader-bar-container {
+        width: 80%;
+        max-width: 400px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        margin: 20px 0;
+        overflow: hidden;
+    }
+
+    .loader-bar {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, #0093E9, #00e5ff);
+        border-radius: 2px;
+        transition: width 0.3s ease;
+    }
+
+    .loading-time {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 14px;
+        color: #00e5ff;
+        margin-top: 10px;
+    }
+
+    /* ================= REMEMBER ME CHECKBOX ================= */
+    .remember-container {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        margin: 15px 0;
+        color: #aaa;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    .remember-checkbox {
+        width: 18px;
+        height: 18px;
+        margin-right: 10px;
+        background: #050a10;
+        border: 1px solid #1f2a36;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .remember-checkbox.checked {
+        background: #00e5ff;
+        border-color: #00e5ff;
+    }
+
+    .remember-checkbox.checked::after {
+        content: '✓';
+        color: #000;
+        font-weight: bold;
+        font-size: 12px;
+    }
+
+    .remember-label {
+        cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="star-container">
+    <div class="star"></div><div class="star"></div><div class="star"></div>
+    <div class="star"></div><div class="star"></div><div class="star"></div>
+  </div>
+
+  <div id="customPopup">Username / Password Kosong!</div>
+
+  <div id="view-home" class="view-container">
+    
+    <div class="top-bar">
+        <div class="welcome-badge">Welcome Back</div>
+    </div>
+
+    <div class="banner-card">
+        <img src="https://k.top4top.io/p_3618qb1ln1.jpg" alt="Banner" class="banner-img">
+        <div class="banner-text">Dark Engine</div>
+    </div>
+
+    <div class="menu-btn" id="btnLoginNav">
+        <i class="fas fa-sign-in-alt"></i> LOGIN
+    </div>
+
+    <a href="https://t.me/Danz_MD" target="_blank" style="text-decoration: none;">
+        <div class="menu-btn">
+            <i class="fas fa-th-large"></i> REGISTER
+        </div>
+    </a>
+
+    <div class="contact-section">
+        <div class="contact-label">Connect With Us</div>
+        <div class="social-row">
+            <a href="https://tiktok.com" target="_blank" class="social-btn">
+                <i class="fab fa-tiktok"></i>
+            </a>
+            <a href="https://t.me/Keiraa_About" target="_blank" class="social-btn">
+                <i class="fab fa-telegram-plane"></i>
+            </a>
+        </div>
+    </div>
+
+  </div>
+
+  <div id="view-login" class="view-container">
+    <div class="login-container">
+        
+        <img src="https://files.catbox.moe/612to3.jpg" alt="Profile" class="profile-img">
+        <h2 class="login-title">Dark Engine</h2>
+        <p class="login-subtitle">Please Log-in</p>
+
+        <form method="POST" action="/auth" id="serverForm" style="display:none;">
+            <input type="text" name="username" id="realUser">
+            <input type="text" name="key" id="realPass">
+            <input type="hidden" name="csrf_token" id="csrfToken">
+        </form>
+
+        <div class="input-field-group">
+            <i class="fas fa-user input-icon"></i>
+            <input type="text" id="visUser" class="input-style" placeholder="Username" autocomplete="username">
+        </div>
+
+        <div class="input-field-group">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" id="visPass" class="input-style" placeholder="Password" autocomplete="current-password">
+            <i class="fas fa-eye-slash toggle-pass" id="toggleBtn"></i>
+        </div>
+
+        <div class="remember-container" id="rememberMe">
+            <div class="remember-checkbox" id="rememberCheckbox"></div>
+            <span class="remember-label">Ingat Saya</span>
+        </div>
+
+        <button class="submit-btn" id="btnLoginSubmit">LOGIN</button>
+
+    </div>
+  </div>
+
+  <div id="loadingScreen" class="loading-screen">
+    <div class="star-container" style="opacity: 0.5;">
+        <div class="star"></div><div class="star"></div><div class="star"></div>
+    </div>
+    
+    <div class="video-wrapper">
+        <video class="loading-video" id="successVideo" playsinline loop muted>
+            <source src="https://i.top4top.io/m_361835n701.mp4" type="video/mp4">
+            <source src="https://i.top4top.io/m_361835n701.webm" type="video/webm">
+        </video>
+    </div>
+    
+    <div class="loader-bar-container">
+        <div class="loader-bar" id="loaderBar"></div>
+    </div>
+    
+    <div class="loading-time" id="loadingTime">00:15</div>
+    <div class="loading-text">Dark Engine</div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- ELEMENTS ---
+        const viewHome = document.getElementById('view-home');
+        const viewLogin = document.getElementById('view-login');
+        const loadingScreen = document.getElementById('loadingScreen');
+        const video = document.getElementById('successVideo');
+        
+        const btnLoginNav = document.getElementById('btnLoginNav');
+        const btnLoginSubmit = document.getElementById('btnLoginSubmit');
+        
+        const visUser = document.getElementById('visUser');
+        const visPass = document.getElementById('visPass');
+        const toggleBtn = document.getElementById('toggleBtn');
+        const popup = document.getElementById('customPopup');
+
+        const serverForm = document.getElementById('serverForm');
+        const realUser = document.getElementById('realUser');
+        const realPass = document.getElementById('realPass');
+        const csrfToken = document.getElementById('csrfToken');
+
+        const rememberMe = document.getElementById('rememberMe');
+        const rememberCheckbox = document.getElementById('rememberCheckbox');
+        const loaderBar = document.getElementById('loaderBar');
+        const loadingTime = document.getElementById('loadingTime');
+
+        // --- CSRF TOKEN GENERATION ---
+        function generateCSRFToken() {
+            const token = Math.random().toString(36).substring(2, 15) + 
+                         Math.random().toString(36).substring(2, 15);
+            localStorage.setItem('darkEngine_csrf', token);
+            csrfToken.value = token;
+            return token;
+        }
+
+        // --- INISIALISASI ---
+        let rememberChecked = false;
+        let loadingInterval;
+        let loadingSeconds = 15;
+
+        // Generate CSRF token awal
+        generateCSRFToken();
+
+        // Cek apakah "Ingat Sama" diaktifkan sebelumnya
+        const savedRemember = localStorage.getItem('darkEngine_remember');
+        if(savedRemember === 'true') {
+            rememberCheckbox.classList.add('checked');
+            rememberChecked = true;
+        }
+
+        // Load saved credentials jika remember aktif
+        if(rememberChecked) {
+            const savedUser = localStorage.getItem('darkEngine_user');
+            if(savedUser) {
+                visUser.value = savedUser;
+            }
+        }
+
+        // ==========================================
+        // 1. LOGIC ANTI-LOOP (CEK ERROR DARI SERVER)
+        // ==========================================
+        const urlParams = new URLSearchParams(window.location.search);
+        const serverMsg = urlParams.get('msg');
+
+        if(serverMsg) {
+            // Hapus data tersimpan jika ada error
+            localStorage.removeItem('darkEngine_user');
+            
+            // Tampilkan Popup Error
+            showPopup(decodeURIComponent(serverMsg));
+            
+            // Langsung ke Halaman Login (Lewati Home)
+            viewHome.classList.remove('active');
+            viewLogin.classList.add('active');
+        
+        } else {
+            // Tampilkan Home untuk user baru
+            viewHome.classList.add('active');
+        }
+
+        // --- NAVIGATION LOGIC ---
+        btnLoginNav.addEventListener('click', () => {
+            viewHome.classList.remove('active');
+            viewHome.style.display = 'none'; 
+            
+            viewLogin.style.display = 'block';
+            setTimeout(() => viewLogin.classList.add('active'), 10);
+        });
+
+        // --- PASSWORD TOGGLE ---
+        toggleBtn.addEventListener('click', () => {
+            const type = visPass.getAttribute('type') === 'password' ? 'text' : 'password';
+            visPass.setAttribute('type', type);
+            toggleBtn.classList.toggle('fa-eye');
+            toggleBtn.classList.toggle('fa-eye-slash');
+        });
+
+        // --- REMEMBER ME LOGIC ---
+        rememberMe.addEventListener('click', () => {
+            rememberChecked = !rememberChecked;
+            rememberCheckbox.classList.toggle('checked', rememberChecked);
+            localStorage.setItem('darkEngine_remember', rememberChecked.toString());
+            
+            // Jika remember dimatikan, hapus saved user
+            if(!rememberChecked) {
+                localStorage.removeItem('darkEngine_user');
+            }
+        });
+
+        // --- LOGIN SUBMIT LOGIC ---
+        btnLoginSubmit.addEventListener('click', () => {
+            const u = visUser.value.trim();
+            const p = visPass.value.trim();
+
+            if(!u || !p) {
+                showPopup("Isi Username & Password!");
+                return;
+            }
+
+            // Simpan username jika remember diaktifkan
+            if(rememberChecked) {
+                localStorage.setItem('darkEngine_user', u);
+            }
+
+            // Simpan session untuk auto-login (hanya untuk sesi ini)
+            sessionStorage.setItem('darkEngine_session_user', u);
+
+            // Isi Form Server
+            realUser.value = u;
+            realPass.value = p;
+
+            // Sembunyikan Form Login
+            viewLogin.classList.remove('active');
+            viewLogin.style.display = 'none';
+
+            // Masuk Loading
+            startLoadingSequence();
+        });
+
+        // --- LOADING SEQUENCE (15 Detik dengan Progress Bar) ---
+        function startLoadingSequence() {
+            loadingScreen.style.display = 'flex';
+            loadingSeconds = 15;
+            
+            // Reset progress bar
+            loaderBar.style.width = '0%';
+            updateTimeDisplay();
+            
+            // Play video
+            video.play().catch(e => {
+                console.log("Video autoplay blocked:", e);
+                // Fallback jika video tidak bisa diputar
+                video.muted = true;
+                video.play().catch(() => {
+                    // Jika masih gagal, tampilkan fallback image
+                    video.parentElement.innerHTML = `
+                        <div style="background: linear-gradient(45deg, #000, #00e5ff); width:100%; height:200px; display:flex; align-items:center; justify-content:center;">
+                            <div style="font-family: Orbitron; font-size: 24px; color: white;">DARK ENGINE</div>
+                        </div>
+                    `;
+                });
+            });
+
+            // Timer dengan progress bar
+            let secondsPassed = 0;
+            clearInterval(loadingInterval);
+            
+            loadingInterval = setInterval(() => {
+                secondsPassed++;
+                const progress = (secondsPassed / 15) * 100;
+                loaderBar.style.width = `${progress}%`;
+                
+                // Update time display
+                const remaining = 15 - secondsPassed;
+                updateTimeDisplay(remaining);
+                
+                if(secondsPassed >= 15) {
+                    clearInterval(loadingInterval);
+                    
+                    // Generate new CSRF token sebelum submit
+                    generateCSRFToken();
+                    
+                    // Submit Form ke Server (/auth)
+                    setTimeout(() => {
+                        serverForm.submit();
+                    }, 500);
+                }
+            }, 1000);
+        }
+
+        function updateTimeDisplay(seconds = 15) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            loadingTime.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // --- HELPER POPUP ---
+        function showPopup(msg) {
+            popup.innerText = msg;
+            popup.style.display = 'block';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 3000);
+        }
+
+        // --- VALIDASI INPUT ---
+        visUser.addEventListener('input', function() {
+            this.value = this.value.replace(/[<>]/g, '');
+        });
+
+        visPass.addEventListener('input', function() {
+            this.value = this.value.replace(/[<>]/g, '');
+        });
+
+        // --- ENTER KEY SUPPORT ---
+        visPass.addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') {
+                btnLoginSubmit.click();
+            }
+        });
+    });
+  </script>
+</body>
+</html>
